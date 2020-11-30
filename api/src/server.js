@@ -1,3 +1,14 @@
+import { graphql } from 'graphql';
+
+import { schema, rootValue } from './schema';
+
+const executeGraphQLRequest = async (request) => {
+  const resp = await graphql(schema, request, rootValue);
+  console.log(resp.data);
+};
+
+executeGraphQLRequest(process.argv[2]);
+
 /** GIA NOTES
  *
  * Use the code below to start a bare-bone express web server
