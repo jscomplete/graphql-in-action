@@ -1,0 +1,7 @@
+node_modules/
+.vscode/
+.DS_Store
+.idea/
+web/src/dist/
+web/src/.cache/
+prettier.config.js

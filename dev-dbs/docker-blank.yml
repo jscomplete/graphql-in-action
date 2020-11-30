@@ -1,0 +1,18 @@
+version: '3'
+services:
+  postgres:
+    container_name: gia_pg
+    image: postgres:12.2-alpine
+    expose:
+      - 5432
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_PASSWORD=password
+  mongo:
+    container_name: gia_mongo
+    image: mongo:4.2.6-bionic
+    expose:
+      - 27017
+    ports:
+      - '27017:27017'

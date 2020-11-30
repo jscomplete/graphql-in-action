@@ -1,0 +1,70 @@
+= GraphQL In Action
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :bookmark:
+:important-caption: :boom:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
+A GraphQL project with a backend component written with GraphQL-js and Apollo Server and a frontend component written in React. Branch "main" is the starting point for the GraphQL In Action book. Other branches are used to track the progress of updates throughout the book:
+
+- Branch "5.0" is the starting point (Chapter 5 in the book). This is an alias for the "main" branch.
+
+- Branch "9.0" has a working version of the React app before using the GraphQL API. This is the point where the GraphQL API is complete (except for subscriptions, which are implemented in Chapter 10)
+
+- Branch "10.0" has a worknig version of using a GraphQL client with a React app without a client library (like Apollo).
+
+- Branch "10.10" (aliased as "final") has the same React app after converting all data communications to use Apollo Client, adding subscriptions operations, and doing the entire local app state management with Apollo.
+
+== Install dependencies
+
+----
+npm install
+----
+
+== Start databases
+
+You'll need https://docs.docker.com/compose/[Docker Compose^] (which is part of https://www.docker.com/products/docker-desktop[Docker Desktop^]).
+
+Then run:
+
+----
+npm run start-dbs
+----
+
+This will download and start a PostgreSQL database container on port 5432 and a MongoDB container on port 27017. Both databases have some sample development data loaded in. The connection credentials for these databases are:
+
+----
+PG_CONNECTION_STRING  = "postgres://postgres:password@localhost:5432/azdev"
+MDB_CONNECTION_STRING = "mongodb://localhost:27017/azdev"
+----
+
+If you already have a PostgreSQL database that you would like to use instead of the provided Docker containers, you will need to create the database schemas for the project using the `dev-db/schema.*` files (which will also load the sample data).
+
+Using psql:
+
+----
+psql -d "postgres://postgres:password@localhost:5432" -c "create database azdev"
+psql -d "postgres://postgres:password@localhost:5432/azdev" < dev-dbs/schema.sql
+----
+
+Using mongo:
+
+----
+mongo mongodb://127.0.0.1:27017/ < dev-dbs/schema.mongo
+----
+
+== Run for dev
+
+In 2 different terminals:
+
+----
+npm run api-server
+npm run web-server
+----
+
+== Defaults:
+
+- API server: http://localhost:4321
+- Web server: http://localhost:1234
