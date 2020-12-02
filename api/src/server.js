@@ -1,5 +1,5 @@
 import { graphqlHTTP } from 'express-graphql';
-import { schema, rootValue } from './schema';
+import { schema } from './schema';
 
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -20,7 +20,6 @@ async function main() {
     '/',
     graphqlHTTP({
       schema,
-      rootValue,
       graphiql: true,
     })
   );

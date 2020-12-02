@@ -1,14 +1,24 @@
-import { buildSchema } from 'graphql';
+import {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLNonNull,
+} from 'graphql';
 
-export const schema = buildSchema(`
-  type Query {
-    currentTime: String!
-  }
-`);
-
-export const rootValue = {
-  currentTime: () => {
-    const isoString = new Date().toISOString();
-    return isoString.slice(11, 19);
+const QueryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    currentTime: {
+      type: GraphQLString,
+      resolve: () => {
+        const isoString = new Date().toISOString();
+        return isoString.slice(11, 19);
+      },
+    },
   },
-};
+});
+
+export const schema = new GraphQLSchema({
+  query: QueryType,
+});
