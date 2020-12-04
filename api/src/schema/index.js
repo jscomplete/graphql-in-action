@@ -35,16 +35,8 @@ const QueryType = new GraphQLObjectType({
     },
     taskMainList: {
       type: new GraphQLList(new GraphQLNonNull(Task)),
-      resolve: async (source, args, { pgPool }) => {
-        const pgResp = await pgPool.query(`
-          SELECT id, content, tags,
-            approach_count AS "approachCount", created_at AS "createdAt"
-          FROM azdev.tasks
-          WHERE is_private = FALSE
-          ORDER BY created_at DESC
-          LIMIT 100
-        `);
-        return pgResp.rows;
+      resolve: async (source, args, { pgApi }) => {
+        return pgApi.taskMainList();
       },
     },
   },
