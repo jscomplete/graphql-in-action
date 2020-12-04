@@ -1,9 +1,23 @@
+const views = {
+  tasksAndUsers: `
+    SELECT t.*,
+        u.id AS "author_id",
+        u.username AS "author_username",
+        u.first_name AS "author_firstName",
+        u.last_name AS "author_lastName",
+        u.created_at AS "author_createdAt"
+    FROM azdev.tasks t
+    JOIN azdev.users u ON (t.user_id = u.id)
+  `,
+};
+
 export default {
   // ------
   // SELECT
 
   tasksLatest: `
-    SELECT id, content, tags, user_id AS "userId", approach_count AS "approachCount", is_private AS "isPrivate", created_at AS "createdAt"
+    SELECT id, content, tags, user_id AS "userId", approach_count AS "approachCount", is_private AS "isPrivate", created_at AS "createdAt",
+      "author_id", "author_username", "author_firstName", "author_lastName", "author_createdAt"
     FROM azdev.tasks
     WHERE is_private = FALSE
     ORDER BY created_at DESC
