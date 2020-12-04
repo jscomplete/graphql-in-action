@@ -34,8 +34,8 @@ const QueryType = new GraphQLObjectType({
     },
     taskMainList: {
       type: new GraphQLList(new GraphQLNonNull(Task)),
-      resolve: async (source, args, { pgApi }) => {
-        return pgApi.taskMainList();
+      resolve: async (source, args, { loaders }) => {
+        return loaders.tasksByTypes.load('latest');
       },
     },
     taskInfo: {

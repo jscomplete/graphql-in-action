@@ -28,10 +28,13 @@ async function main() {
         pgApi.approachLists(taskIds)
       ),
       tasks: new DataLoader((taskIds) => pgApi.tasksInfo(taskIds)),
+      tasksByTypes: new DataLoader((types) =>
+        pgApi.tasksByTypes(types)
+      ),
     };
     graphqlHTTP({
       schema,
-      context: { pgApi, loaders },
+      context: { loaders },
       graphiql: true,
       customFormatErrorFn: (err) => {
         const errorReport = {
