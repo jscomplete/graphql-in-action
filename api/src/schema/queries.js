@@ -1,4 +1,5 @@
 import {
+  GraphQLID,
   GraphQLObjectType,
   GraphQLString,
   GraphQLInt,
@@ -35,6 +36,15 @@ const QueryType = new GraphQLObjectType({
       type: new GraphQLList(new GraphQLNonNull(Task)),
       resolve: async (source, args, { pgApi }) => {
         return pgApi.taskMainList();
+      },
+    },
+    taskInfo: {
+      type: Task,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve: async (source, args, { loaders }) => {
+        return loaders.tasks.load(args.id);
       },
     },
   },

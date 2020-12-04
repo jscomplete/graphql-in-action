@@ -27,6 +27,7 @@ async function main() {
       approachLists: new DataLoader((taskIds) =>
         pgApi.approachLists(taskIds)
       ),
+      tasks: new DataLoader((taskIds) => pgApi.tasksInfo(taskIds)),
     };
     graphqlHTTP({
       schema,
