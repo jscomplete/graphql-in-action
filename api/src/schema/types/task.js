@@ -8,6 +8,7 @@ import {
 } from 'graphql';
 
 import User from './user';
+import Approach from './approach';
 
 const Task = new GraphQLObjectType({
   name: 'Task',
@@ -29,6 +30,13 @@ const Task = new GraphQLObjectType({
       type: new GraphQLNonNull(User),
       resolve: (source, args, { pgApi }) =>
         pgApi.userInfo(source.userId),
+    },
+    approachList: {
+      type: new GraphQLNonNull(
+        new GraphQLList(new GraphQLNonNull(Approach))
+      ),
+      resolve: (source, args, { pgApi }) =>
+        pgApi.approachList(source.id),
     },
   },
 });
