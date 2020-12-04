@@ -12,6 +12,7 @@
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "cross-fetch": "^3.0.6",
+    "dataloader": "^2.0.0",
     "dotenv": "^8.2.0",
     "esm": "^3.2.25",
     "express": "^4.17.1",
