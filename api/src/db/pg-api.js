@@ -40,6 +40,16 @@ const pgApiWrapper = async () => {
         pgResp.rows.find((row) => taskId == row.id)
       );
     },
+    searchResults: async (searchTerms) => {
+      const results = searchTerms.map(async (searchTerm) => {
+        const pgResp = await pgQuery(sqls.searchResults, {
+          $1: searchTerm,
+          $2: null, // TODO: pass logged-in userId here.
+        });
+        return pgResp.rows;
+      });
+      return Promise.all(results);
+    },
   };
 };
 

@@ -31,6 +31,9 @@ async function main() {
       tasksByTypes: new DataLoader((types) =>
         pgApi.tasksByTypes(types)
       ),
+      searchResults: new DataLoader((searchTerms) =>
+        pgApi.searchResults(searchTerms)
+      ),
     };
     graphqlHTTP({
       schema,

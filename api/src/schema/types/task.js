@@ -9,9 +9,11 @@ import {
 
 import User from './user';
 import Approach from './approach';
+import SearchResultItem from './search-result-item';
 
 const Task = new GraphQLObjectType({
   name: 'Task',
+  interfaces: () => [SearchResultItem],
   fields: {
     id: { type: new GraphQLNonNull(GraphQLID) },
     content: { type: new GraphQLNonNull(GraphQLString) },
