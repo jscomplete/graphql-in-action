@@ -19,6 +19,15 @@ const pgApiWrapper = async () => {
       return pgResp.rows[0];
     },
 
+    tasksForUsers: async (userIds) => {
+      const pgResp = await pgQuery(sqls.tasksForUsers, {
+        $1: userIds,
+      });
+      return userIds.map((userId) =>
+        pgResp.rows.filter((row) => userId === row.userId)
+      );
+    },
+
     tasksByTypes: async (types) => {
       const results = types.map(async (type) => {
         if (type === 'latest') {

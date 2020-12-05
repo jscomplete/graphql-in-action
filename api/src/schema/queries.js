@@ -12,6 +12,7 @@ import { numbersInRangeObject } from '../utils';
 
 import Task from './types/task';
 import SearchResultItem from './types/search-result-item';
+import { Me } from './types/user';
 
 const QueryType = new GraphQLObjectType({
   name: 'Query',
@@ -57,6 +58,12 @@ const QueryType = new GraphQLObjectType({
       },
       resolve: async (source, args, { loaders }) => {
         return loaders.searchResults.load(args.term);
+      },
+    },
+    me: {
+      type: Me,
+      resolve: async (source, args, { currentUser }) => {
+        return currentUser;
       },
     },
   },
