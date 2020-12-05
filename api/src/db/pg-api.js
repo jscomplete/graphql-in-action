@@ -1,6 +1,8 @@
 import pgClient from './pg-client';
 import sqls from './sqls';
 
+import { randomString } from '../utils';
+
 const pgApiWrapper = async () => {
   const { pgPool } = await pgClient();
   const pgQuery = (text, params = {}) =>
@@ -49,6 +51,32 @@ const pgApiWrapper = async () => {
         return pgResp.rows;
       });
       return Promise.all(results);
+    },
+
+    mutators: {
+      userCreate: async ({ input }) => {
+        const payload = { errors: [] };
+        if (input.password.length < 6) {
+          payload.errors.push({
+            message: 'Use a stronger password',
+          });
+        }
+        if (payload.errors.length === 0) {
+          const authToken = randomString();
+          const pgResp = await pgQuery(sqls.userInsert, {
+            $1: input.username.toLowerCase(),
+            $2: input.password,
+            $3: input.firstName,
+            $4: input.lastName,
+            $5: authToken,
+          });
+          if (pgResp.rows[0]) {
+            payload.user = pgResp.rows[0];
+            payload.authToken = authToken;
+          }
+        }
+        return payload;
+      },
     },
   };
 };
