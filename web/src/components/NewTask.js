@@ -2,10 +2,22 @@ import React, { useState } from 'react';
 
 import { useStore } from '../store';
 import Errors from './Errors';
+import { FULL_TASK_FRAGMENT } from './TaskPage';
 
-/** GIA NOTES
- * Define GraphQL operations here...
- */
+const TASK_CREATE = `
+  mutation taskCreate($input: TaskInput!) {
+    taskCreate(input: $input) {
+      errors {
+        message
+      }
+      task {
+        id
+        ...FullTaskData
+      }
+    }
+  }
+  ${FULL_TASK_FRAGMENT}
+`;
 
 export default function NewTask() {
   const {
@@ -31,24 +43,25 @@ export default function NewTask() {
   const handleNewTaskSubmit = async (event) => {
     event.preventDefault();
     const input = event.target.elements;
-
-    /** GIA NOTES
-     *
-     * 1) Invoke the mutation create a new task:
-     *   - input.*.value has what a user types in an input box
-     *
-     * 2) Use the code below after that. It needs these variables:
-     *   - `errors` is an array of objects of type UserError
-     *   - `task` is the newly created Task object
-
-      if (errors.length > 0) {
-        return setUIErrors(errors);
-      }
-      setLocalAppState({
-        component: { name: 'TaskPage', props: { taskId: task.id } },
-      });
-
-    */
+    const { data, errors: rootErrors } = await request(TASK_CREATE, {
+      variables: {
+        input: {
+          content: input.content.value,
+          tags: input.tags.value.split(','),
+          isPrivate: input.private.checked,
+        },
+      },
+    });
+    if (rootErrors) {
+      return setUIErrors(rootErrors);
+    }
+    const { errors, task } = data.taskCreate;
+    if (errors.length > 0) {
+      return setUIErrors(errors);
+    }
+    setLocalAppState({
+      component: { name: 'TaskPage', props: { taskId: task.id } },
+    });
   };
 
   return (
