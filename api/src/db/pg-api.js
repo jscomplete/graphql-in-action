@@ -147,6 +147,33 @@ const pgApiWrapper = async () => {
 
         return payload;
       },
+      approachCreate: async ({
+        taskId,
+        input,
+        currentUser,
+        mutators,
+      }) => {
+        const payload = { errors: [] };
+        if (payload.errors.length === 0) {
+          const pgResp = await pgQuery(sqls.approachInsert, {
+            $1: currentUser.id,
+            $2: input.content,
+            $3: taskId,
+          });
+          if (pgResp.rows[0]) {
+            payload.approach = pgResp.rows[0];
+            await pgQuery(sqls.approachCountIncrement, {
+              $1: taskId,
+            });
+            await mutators.approachDetailCreate(
+              payload.approach.id,
+              input.detailList
+            );
+          }
+        }
+
+        return payload;
+      },
     },
   };
 };

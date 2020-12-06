@@ -36,7 +36,7 @@ const mongoApiWrapper = async () => {
           approachDetails.push(
             ...explanations.map((explanationText) => ({
               content: explanationText,
-              category: 'EXPLANATION',
+              category: 'explanations',
             }))
           );
         }
@@ -44,7 +44,7 @@ const mongoApiWrapper = async () => {
           approachDetails.push(
             ...notes.map((noteText) => ({
               content: noteText,
-              category: 'NOTE',
+              category: 'notes',
             }))
           );
         }
@@ -52,7 +52,7 @@ const mongoApiWrapper = async () => {
           approachDetails.push(
             ...warnings.map((warningText) => ({
               content: warningText,
-              category: 'WARNING',
+              category: 'warnings',
             }))
           );
         }
@@ -60,7 +60,19 @@ const mongoApiWrapper = async () => {
       });
     },
 
-    mutators: {},
+    mutators: {
+      approachDetailCreate: async (approachId, detailsInput) => {
+        const details = {};
+        detailsInput.forEach(({ content, category }) => {
+          details[category] = details[category] || [];
+          details[category].push(content);
+        });
+        return mdb.collection('approachDetails').insertOne({
+          pgId: approachId,
+          ...details,
+        });
+      },
+    },
   };
 };
 
