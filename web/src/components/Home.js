@@ -2,19 +2,16 @@ import React, { useState, useEffect } from 'react';
 
 import { useStore } from '../store';
 import Search from './Search';
-import TaskSummary from './TaskSummary';
+import TaskSummary, { TASK_SUMMARY_FRAGMENT } from './TaskSummary';
 
 const TASK_MAIN_LIST = `
   query taskMainList {
     taskMainList {
       id
-      content
-      author {
-        username
-      }
-      tags
+      ...TaskSummary
     }
   }
+  ${TASK_SUMMARY_FRAGMENT}
 `;
 
 export default function Home() {
