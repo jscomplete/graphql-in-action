@@ -2,33 +2,23 @@ import React, { useState, useEffect } from 'react';
 
 import { useStore } from '../store';
 import NewApproach from './NewApproach';
-import Approach from './Approach';
-import TaskSummary from './TaskSummary';
+import Approach, { APPROACH_FRAGMENT } from './Approach';
+import TaskSummary, { TASK_SUMMARY_FRAGMENT } from './TaskSummary';
 
-/** GIA NOTES
- * Define GraphQL operations here...
- */
-
-const mockTaskInfo = {
-  id: 42,
-  content: 'Mock Task content',
-  author: { username: 'mock-author' },
-  tags: ['tag1', 'tag2'],
-  approachList: [
-    {
-      id: 42,
-      content: 'Mock Approach content',
-      author: { username: 'mock-author' },
-      voteCount: 0,
-      detailList: [
-        {
-          content: 'Mock note...',
-          category: 'NOTE',
-        },
-      ],
-    },
-  ],
-};
+const TASK_INFO = `
+  query taskInfo($taskId: ID!) {
+    taskInfo(id: $taskId) {
+      id
+      ...TaskSummary
+      approachList {
+        id
+        ...ApproachFragment
+      }
+    }
+  }
+  ${TASK_SUMMARY_FRAGMENT}
+  ${APPROACH_FRAGMENT}
+`;
 
 export default function TaskPage({ taskId }) {
   const { request, AppLink } = useStore();
@@ -38,16 +28,9 @@ export default function TaskPage({ taskId }) {
 
   useEffect(() => {
     if (!taskInfo) {
-      /** GIA NOTES
-       *
-       *  1) Invoke the query to get the information of a Task object:
-       *     (You can't use `await` here but `promise.then` is okay)
-       *
-       *  2) Change the line below to use the returned data instead of mockTaskInfo:
-       *
-       */
-
-      setTaskInfo(mockTaskInfo); // TODO: Replace mockTaskInfo with API_RESP_FOR_taskInfo
+      request(TASK_INFO, { variables: { taskId } }).then(({ data }) => {
+        setTaskInfo(data.taskInfo);
+      });
     }
   }, [taskId, taskInfo, request]);
 

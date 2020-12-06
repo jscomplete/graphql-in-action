@@ -3,9 +3,19 @@ import React, { useState } from 'react';
 import { useStore } from '../store';
 import Errors from './Errors';
 
-/** GIA NOTES
- * Define GraphQL operations here...
- */
+export const APPROACH_FRAGMENT = `
+  fragment ApproachFragment on Approach {
+    content
+    voteCount
+    author {
+      username
+    }
+    detailList {
+      content
+      category
+    }
+  }
+`;
 
 export default function Approach({ approach, isHighlighted }) {
   const { request } = useStore();
