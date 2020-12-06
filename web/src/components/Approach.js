@@ -17,6 +17,20 @@ export const APPROACH_FRAGMENT = `
   }
 `;
 
+const APPROACH_VOTE = `
+  mutation approachVote($approachId: ID!, $up: Boolean!) {
+    approachVote(approachId: $approachId, input: { up: $up }) {
+      errors {
+        message
+      }
+      updatedApproach: approach {
+        id
+        voteCount
+      }
+    }
+  }
+`;
+
 export default function Approach({ approach, isHighlighted }) {
   const { request } = useStore();
   const [uiErrors, setUIErrors] = useState();
@@ -24,20 +38,20 @@ export default function Approach({ approach, isHighlighted }) {
 
   const handleVote = (direction) => async (event) => {
     event.preventDefault();
-    /** GIA NOTES
-     *
-     * 1) Invoke the mutation to vote on an approach:
-     *   - Variable `direction` is either 'UP' or 'DOWN'
-     * 2) Use the code below after that. It needs these variables:
-     *   - `errors` is an array of objects of type UserError
-     *   - `newVoteCount` is the new count after this vote is cast
-
-      if (errors.length > 0) {
-        return setUIErrors(errors);
-      }
-      setVoteCount(newVoteCount);
-
-    */
+    const { data, errors: rootErrors } = await request(APPROACH_VOTE, {
+      variables: {
+        approachId: approach.id,
+        up: direction === 'UP',
+      },
+    });
+    if (rootErrors) {
+      return setUIErrors(rootErrors);
+    }
+    const { errors, updatedApproach } = data.approachVote;
+    if (errors.length > 0) {
+      return setUIErrors(errors);
+    }
+    setVoteCount(updatedApproach.voteCount);
   };
 
   const renderVoteButton = (direction) => (
