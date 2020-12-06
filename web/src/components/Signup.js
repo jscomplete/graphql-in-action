@@ -3,9 +3,20 @@ import React, { useState } from 'react';
 import { useStore } from '../store';
 import Errors from './Errors';
 
-/** GIA NOTES
- * Define GraphQL operations here...
- */
+const USER_CREATE = `
+  mutation userCreate($input: UserInput!) {
+    userCreate(input: $input) {
+      errors {
+        message
+      }
+      user {
+        id
+        username
+      }
+      authToken
+    }
+  }
+`;
 
 export default function Signup() {
   const { request, setLocalAppState } = useStore();
@@ -16,25 +27,26 @@ export default function Signup() {
     if (input.password.value !== input.confirmPassword.value) {
       return setUIErrors([{ message: 'Password mismatch' }]);
     }
-
-    /** GIA NOTES
-     *
-     * 1) Invoke the mutation to create a user record:
-     * - input.*.value has what a user types in an input box
-     *
-     * 2) Use the code below after that. It needs these variables:
-     *   - `errors` is an array of objects of type UserError
-     *   - `user` is a user object response from the API
-     *   - `authToken` is a string value response from the API
-
-      if (errors.length > 0) {
-        return setUIErrors(errors);
-      }
-      user.authToken = authToken;
-      window.localStorage.setItem('azdev:user', JSON.stringify(user));
-      setLocalAppState({ user, component: { name: 'Home' } });
-
-    */
+    const { data, errors: rootErrors } = await request(USER_CREATE, {
+      variables: {
+        input: {
+          firstName: input.firstName.value,
+          lastName: input.lastName.value,
+          username: input.username.value,
+          password: input.password.value,
+        },
+      },
+    });
+    if (rootErrors) {
+      return setUIErrors(rootErrors);
+    }
+    const { errors, user, authToken } = data.userCreate;
+    if (errors.length > 0) {
+      return setUIErrors(errors);
+    }
+    user.authToken = authToken;
+    window.localStorage.setItem('azdev:user', JSON.stringify(user));
+    setLocalAppState({ user, component: { name: 'Home' } });
   };
   return (
     <div className="sm-container">
