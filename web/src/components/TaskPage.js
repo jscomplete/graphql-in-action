@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { gql, useQuery } from '@apollo/client';
+import { gql, useQuery, useSubscription } from '@apollo/client';
 
 import { useStore } from '../store';
 import NewApproach from './NewApproach';
@@ -28,12 +28,25 @@ const TASK_INFO = gql`
   ${FULL_TASK_FRAGMENT}
 `;
 
+const VOTE_CHANGED = gql`
+  subscription voteChanged($taskId: ID!) {
+    voteChanged(taskId: $taskId) {
+      id
+      voteCount
+    }
+  }
+`;
+
 export default function TaskPage({ taskId }) {
   const { AppLink } = useStore();
   const [showAddApproach, setShowAddApproach] = useState(false);
   const [highlightedApproachId, setHighlightedApproachId] = useState();
 
   const { error, loading, data } = useQuery(TASK_INFO, {
+    variables: { taskId },
+  });
+
+  useSubscription(VOTE_CHANGED, {
     variables: { taskId },
   });
 

@@ -6,7 +6,10 @@ import {
   ApolloClient,
   HttpLink,
   InMemoryCache,
+  split,
 } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
 import { setContext } from '@apollo/client/link/context';
 
 import * as config from './config';
@@ -26,8 +29,25 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+const wsLink = new WebSocketLink({
+  uri: config.GRAPHQL_SUBSCRIPTIONS_URL,
+  options: { reconnect: true },
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  authLink.concat(httpLink)
+);
+
 const client = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: splitLink,
   cache,
 });
 
