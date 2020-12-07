@@ -1,50 +1,48 @@
-import React, { useState } from 'react';
-import fetch from 'cross-fetch';
+import React from 'react';
+import { useApolloClient, useQuery, gql } from '@apollo/client';
 
-import * as config from './config';
-
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
-
-const httpLink = new HttpLink({ uri: config.GRAPHQL_SERVER_URL });
-const cache = new InMemoryCache();
-const client = new ApolloClient({ link: httpLink, cache });
-
-const initialLocalAppState = {
-  component: { name: 'Home', props: {} },
-  user: JSON.parse(window.localStorage.getItem('azdev:user')),
-};
-
-// The useStoreObject is a custom hook function designed
-// to be used with React's context feature
-export const useStoreObject = () => {
-  // This state object is used to manage
-  // all local app state elements (like user/component)
-  const [state, setState] = useState(() => initialLocalAppState);
-
-  // This function can be used with 1 or more
-  // state elements. For example:
-  // const user = useLocalAppState('user');
-  // const [component, user] = useLocalAppState('component', 'user');
-  const useLocalAppState = (...stateMapper) => {
-    if (stateMapper.length === 1) {
-      return state[stateMapper[0]];
+export const LOCAL_APP_STATE = gql`
+  query localAppState {
+    component @client {
+      name
+      props
     }
-    return stateMapper.map((element) => state[element]);
+    user @client {
+      username
+      authToken
+    }
+  }
+`;
+
+export const useStore = () => {
+  const client = useApolloClient();
+
+  const useLocalAppState = (...stateMapper) => {
+    const { data } = useQuery(LOCAL_APP_STATE);
+    if (stateMapper.length === 1) {
+      return data[stateMapper[0]];
+    }
+    return stateMapper.map((element) => data[element]);
   };
 
-  // This function shallow-merges a newState object
-  // with the current local app state object
   const setLocalAppState = (newState) => {
     if (newState.component) {
       newState.component.props = newState.component.props ?? {};
     }
-    setState((currentState) => {
-      return { ...currentState, ...newState };
+    const currentState = client.readQuery({
+      query: LOCAL_APP_STATE,
     });
-    // Reset cache when users login/logout
+    const updateState = () => {
+      client.writeQuery({
+        query: LOCAL_APP_STATE,
+        data: { ...currentState, ...newState },
+      });
+    };
     if (newState.user || newState.user === null) {
+      client.onResetStore(updateState);
       client.resetStore();
+    } else {
+      updateState();
     }
   };
 
@@ -66,19 +64,6 @@ export const useStoreObject = () => {
     );
   };
 
-  const authLink = setContext((_, { headers }) => {
-    return {
-      headers: {
-        ...headers,
-        authorization: state.user
-          ? `Bearer ${state.user.authToken}`
-          : '',
-      },
-    };
-  });
-
-  client.setLink(authLink.concat(httpLink));
-
   // In React components, the following is the object you get
   // when you make a useStore() call
   return {
@@ -88,9 +73,3 @@ export const useStoreObject = () => {
     client,
   };
 };
-
-// Define React's context object and the useStore
-// custom hook function that'll use it
-const AZContext = React.createContext();
-export const Provider = AZContext.Provider;
-export const useStore = () => React.useContext(AZContext);
