@@ -1,3 +1,4 @@
+import { ApolloServer } from 'apollo-server';
 import { graphqlHTTP } from 'express-graphql';
 import { schema } from './schema';
 
@@ -80,6 +81,12 @@ async function main() {
 
   server.listen(config.port, () => {
     console.log(`Server URL: http://localhost:${config.port}/`);
+  });
+
+  const serverWS = new ApolloServer({ schema });
+
+  serverWS.listen({ port: 4000 }).then(({ subscriptionsUrl }) => {
+    console.log(`Subscriptions URL: ${subscriptionsUrl}`);
   });
 }
 

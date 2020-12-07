@@ -1,3 +1,4 @@
+import { pubsub } from '../pubsub';
 import { GraphQLObjectType, GraphQLNonNull, GraphQLID } from 'graphql';
 
 import UserPayload from './types/payload-user';
@@ -37,7 +38,16 @@ const MutationType = new GraphQLObjectType({
         input: { type: new GraphQLNonNull(TaskInput) },
       },
       resolve: async (source, { input }, { mutators, currentUser }) => {
-        return mutators.taskCreate({ input, currentUser });
+        const { errors, task } = await mutators.taskCreate({
+          input,
+          currentUser,
+        });
+        if (errors.length === 0 && !task.isPrivate) {
+          pubsub.publish('TASK_MAIN_LIST_CHANGED', {
+            newTask: task,
+          });
+        }
+        return { errors, task };
       },
     },
     approachCreate: {
@@ -66,7 +76,16 @@ const MutationType = new GraphQLObjectType({
         input: { type: new GraphQLNonNull(ApproachVoteInput) },
       },
       resolve: async (source, { approachId, input }, { mutators }) => {
-        return mutators.approachVote({ approachId, input });
+        const { errors, approach } = await mutators.approachVote({
+          approachId,
+          input,
+        });
+        if (errors.length === 0) {
+          pubsub.publish(`VOTE_CHANGED_${approach.taskId}`, {
+            updatedApproach: approach,
+          });
+        }
+        return { errors, approach };
       },
     },
     userDelete: {
