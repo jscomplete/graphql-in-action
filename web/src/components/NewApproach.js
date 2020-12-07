@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { gql } from '@apollo/client';
+import React, { useState } from 'react';
+import { gql, useQuery, useMutation } from '@apollo/client';
 
 import { useStore } from '../store';
 import Errors from './Errors';
@@ -31,20 +31,44 @@ const APPROACH_CREATE = gql`
 `;
 
 export default function NewApproach({ taskId, onSuccess }) {
-  const { useLocalAppState, query, mutate } = useStore();
-  const [detailCategories, setDetailCategories] = useState([]);
+  const { useLocalAppState } = useStore();
   const [detailRows, setDetailRows] = useState([0]);
   const [uiErrors, setUIErrors] = useState([]);
 
-  useEffect(() => {
-    if (detailCategories.length === 0) {
-      query(DETAIL_CATEGORIES).then(({ data }) => {
-        setDetailCategories(data.detailCategories.enumValues);
-      });
+  const { error: dcError, loading: dcLoading, data } = useQuery(
+    DETAIL_CATEGORIES
+  );
+
+  const [createApproach, { error, loading }] = useMutation(
+    APPROACH_CREATE,
+    {
+      update(cache, { data: { approachCreate } }) {
+        if (approachCreate.approach) {
+          onSuccess((taskInfo) => {
+            cache.modify({
+              id: cache.identify(taskInfo),
+              fields: {
+                approachList(currentList) {
+                  return [approachCreate.approach, ...currentList];
+                },
+              },
+            });
+            return approachCreate.approach.id;
+          });
+        }
+      },
     }
-  }, [detailCategories, query]);
+  );
 
   const user = useLocalAppState('user');
+
+  if (dcLoading) {
+    return <div className="loading">Loading...</div>;
+  }
+  if (dcError || error) {
+    return <div className="error">{(dcError || error).message}</div>;
+  }
+  const detailCategories = data.detailCategories.enumValues;
 
   if (!user) {
     return (
@@ -64,7 +88,7 @@ export default function NewApproach({ taskId, onSuccess }) {
       category: input[`detail-category-${detailId}`].value,
       content: input[`detail-content-${detailId}`].value,
     }));
-    const { data, errors: rootErrors } = await mutate(APPROACH_CREATE, {
+    const { data, errors: rootErrors } = await createApproach({
       variables: {
         taskId,
         input: {
@@ -76,11 +100,10 @@ export default function NewApproach({ taskId, onSuccess }) {
     if (rootErrors) {
       return setUIErrors(rootErrors);
     }
-    const { errors, approach } = data.approachCreate;
+    const { errors } = data.approachCreate;
     if (errors.length > 0) {
       return setUIErrors(errors);
     }
-    onSuccess(approach);
   };
 
   return (

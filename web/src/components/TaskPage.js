@@ -30,7 +30,6 @@ const TASK_INFO = gql`
 
 export default function TaskPage({ taskId }) {
   const { AppLink } = useStore();
-  // const [ taskInfo, setTaskInfo ] = useState(null);
   const [showAddApproach, setShowAddApproach] = useState(false);
   const [highlightedApproachId, setHighlightedApproachId] = useState();
 
@@ -48,12 +47,9 @@ export default function TaskPage({ taskId }) {
 
   const { taskInfo } = data;
 
-  const handleAddNewApproach = (newApproach) => {
-    // setTaskInfo((pTask) => ({
-    //   ...pTask,
-    //   approachList: [newApproach, ...pTask.approachList],
-    // }));
-    setHighlightedApproachId(newApproach.id);
+  const handleAddNewApproach = (addNewApproach) => {
+    const newApproachId = addNewApproach(taskInfo);
+    setHighlightedApproachId(newApproachId);
     setShowAddApproach(false);
   };
 
