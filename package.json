@@ -9,6 +9,7 @@
     "start-blank-dbs": "docker-compose -f dev-dbs/docker-blank.yml up"
   },
   "dependencies": {
+    "@apollo/client": "^3.3.11",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "cross-fetch": "^3.0.6",
