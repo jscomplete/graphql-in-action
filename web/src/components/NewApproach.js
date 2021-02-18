@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { gql } from '@apollo/client';
 
 import { useStore } from '../store';
 import Errors from './Errors';
 import { APPROACH_FRAGMENT } from './Approach';
 
-const DETAIL_CATEGORIES = `
+const DETAIL_CATEGORIES = gql`
   query getDetailCategories {
     detailCategories: __type(name: "ApproachDetailCategory") {
       enumValues {
@@ -14,7 +15,7 @@ const DETAIL_CATEGORIES = `
   }
 `;
 
-const APPROACH_CREATE = `
+const APPROACH_CREATE = gql`
   mutation approachCreate($taskId: ID!, $input: ApproachInput!) {
     approachCreate(taskId: $taskId, input: $input) {
       errors {
@@ -30,18 +31,18 @@ const APPROACH_CREATE = `
 `;
 
 export default function NewApproach({ taskId, onSuccess }) {
-  const { useLocalAppState, request } = useStore();
+  const { useLocalAppState, query, mutate } = useStore();
   const [detailCategories, setDetailCategories] = useState([]);
   const [detailRows, setDetailRows] = useState([0]);
   const [uiErrors, setUIErrors] = useState([]);
 
   useEffect(() => {
     if (detailCategories.length === 0) {
-      request(DETAIL_CATEGORIES).then(({ data }) => {
+      query(DETAIL_CATEGORIES).then(({ data }) => {
         setDetailCategories(data.detailCategories.enumValues);
       });
     }
-  }, [detailCategories, request]);
+  }, [detailCategories, query]);
 
   const user = useLocalAppState('user');
 
@@ -63,18 +64,15 @@ export default function NewApproach({ taskId, onSuccess }) {
       category: input[`detail-category-${detailId}`].value,
       content: input[`detail-content-${detailId}`].value,
     }));
-    const { data, errors: rootErrors } = await request(
-      APPROACH_CREATE,
-      {
-        variables: {
-          taskId,
-          input: {
-            content: input.content.value,
-            detailList,
-          },
+    const { data, errors: rootErrors } = await mutate(APPROACH_CREATE, {
+      variables: {
+        taskId,
+        input: {
+          content: input.content.value,
+          detailList,
         },
-      }
-    );
+      },
+    });
     if (rootErrors) {
       return setUIErrors(rootErrors);
     }
