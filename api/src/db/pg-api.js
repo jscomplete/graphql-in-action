@@ -174,6 +174,34 @@ const pgApiWrapper = async () => {
 
         return payload;
       },
+      approachVote: async ({ approachId, input }) => {
+        const payload = { errors: [] };
+        const pgResp = await pgQuery(sqls.approachVote, {
+          $1: approachId,
+          $2: input.up ? 1 : -1,
+        });
+
+        if (pgResp.rows[0]) {
+          payload.approach = pgResp.rows[0];
+        }
+
+        return payload;
+      },
+      userDelete: async ({ currentUser }) => {
+        const payload = { errors: [] };
+        try {
+          await pgQuery(sqls.userDelete, {
+            $1: currentUser.id,
+          });
+          payload.deletedUserId = currentUser.id;
+        } catch (err) {
+          payload.errors.push({
+            message: 'We were not able to delete this account',
+          });
+        }
+
+        return payload;
+      },
     },
   };
 };
